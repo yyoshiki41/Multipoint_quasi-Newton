@@ -23,7 +23,7 @@ int main()
 
 	char filepath[256];
 	sprintf( filepath,
-		"quasiPso_2n/%2.1f,%2.1f-%2.1f,%2.1f-%2.1f,%2.1f-%2.1f,%2.1f-%2.1f,%2.1f.txt",
+		"normal/%2.1f,%2.1f-%2.1f,%2.1f-%2.1f,%2.1f-%2.1f,%2.1f-%2.1f,%2.1f.txt",
 		x[0][0], x[0][1], x[1][0], x[1][1], x[2][0], x[2][1], x[3][0], x[3][1], x[4][0], x[4][1]
 	);
 	ofstream fout; // file出力の為の定義

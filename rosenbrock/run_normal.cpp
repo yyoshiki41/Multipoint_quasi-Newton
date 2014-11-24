@@ -15,7 +15,7 @@ int main()
 {
 	char filepath[256];
 	int count = 0;
-	sprintf(filepath, "quasiPso_ro/run2.txt");
+	sprintf(filepath, "run/normal.txt");
 	ofstream fout; // file出力の為の定義
 	fout.open(filepath); // fileを開く
 	fout << "#m\tx1\tx2" << endl; // 見出し出力
@@ -88,15 +88,16 @@ int main()
 					g22 = p[1]*p[1] / (p[0]*q[0]+p[1]*q[1]) - ((j12*q[0]+j22*q[1]) * (j21*q[0]+j22*q[1])) / (q[0]*(q[0]*j11+q[1]*j21) + q[1]*(q[0]*j12+q[1]*j22));
 				}
 
-				// Hesseの近似行列の各成分
-				j11 = j11 + g11;
-				j12 = j12 + g12;
-				j21 = j21 + g21;
-				j22 = j22 + g22;
-				if (v[i][0] * f[i][0] + v[i][1] * f[i][1] >= 0) {
-					// H = εI + H
-					j11 += ε;
-					j22 += ε;
+				if (v[i][0] * f[i][0] + v[i][1] * f[i][1] < 0) {
+					// Hesseの近似行列の各成分
+					j11 = j11 + g11;
+					j12 = j12 + g12;
+					j21 = j21 + g21;
+					j22 = j22 + g22;
+				} else {
+					// 単位行列にリセット
+					j11 = j22 = 1;
+					j12 = j21 = 0;
 				}
 				dx[0] = j11 * f[i][0] + j12 * f[i][1];
 				dx[1] = j21 * f[i][0] + j22 * f[i][1];

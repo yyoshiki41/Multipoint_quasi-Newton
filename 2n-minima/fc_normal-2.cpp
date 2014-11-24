@@ -4,38 +4,48 @@
 
 using namespace std;
 
-#define I 5 // 初期点の数
 #define N 2
 #define K 200
-#define ε 0.7
+#define I 5   // 初期点の数
+#define M 200 // 試行回数
+#define ε 0.7 // リセット時の微小係数
 
-double __2n_minima (double x1, double x2);
+double __2n_minima (double x1, double x2, int *call);
 
 int main()
 {
-	double x[I][N];
-	int count = 0;
 	char filepath[256];
-	sprintf(filepath, "quasiPso_2n/run2.txt");
-	ofstream fout; // file出力の為の定義
-	fout.open(filepath); // fileを開く
-	fout << "#m\tx1\tx2" << endl; // 見出し出力
+	sprintf(filepath, "function_call/normal-2.txt");
+	ofstream fout;
+	fout.open(filepath);
+	fout << "fc数\t関数値" << endl;
 
-	for (int m = 1; m <= 100; m++) {
+	for (int m = 1; m <= M; m++) {
+		fout << "試行回数\t" << m << endl;
+		int call = 0; // function call数のリセット
+
+		double x[I][N];
 		for (int i = 0; i < I; i++) {
 			for (int n = 0; n < N; n++) {
 				x[i][n] = ((double)rand() / ((double)RAND_MAX + 1)) * 10 - 5;
 			}
 		}
 
+		double c1 = 0.0001, c2 = 0.01;
+		double λ, r1, r2;
+		double λ_max = 1.0, λ_min = 0.6;
+		// 近似行列の初期値は、単位行列
+		double j11 = 1, j12 = 0, j21 = 0, j22 = 1;
+		double g11 = 0, g12 = 0, g21 = 0, g22 = 0;
+
 		double tmp_x, tmp_gbest, x_gbest[N];
 		for (int i = 0; i < I; i++) {
-			tmp_x = __2n_minima(x[i][0], x[i][1]);
+			tmp_x = __2n_minima(x[i][0], x[i][1], &call);
 			if (i == 0 || tmp_gbest > tmp_x) {
 				for (int n = 0; n < N; n++) {
 					x_gbest[n] = x[i][n];
 				}
-				tmp_gbest = tmp_x;
+				tmp_gbest = __2n_minima(x_gbest[0], x_gbest[1], &call);
 			}
 		}
 
@@ -47,13 +57,6 @@ int main()
 				v[i][n] = 0;
 			}
 		}
-		double c1 = 0.0007, c2 = 0.001;
-		double λ, r1, r2;
-		double λ_max = 1.1, λ_min = 0.9;
-
-		// 近似行列の初期値は、単位行列
-		double j11 = 1, j12 = 0, j21 = 0, j22 = 1;
-		double g11 = 0, g12 = 0, g21 = 0, g22 = 0;
 
 		for (int k = 0; k < K; k++) {
 			// Inertia Weight Approach
@@ -69,12 +72,12 @@ int main()
 
 				if (k != 0) {
 					// PSOのアルゴリズム
-					tmp_x = __2n_minima(x[i][0], x[i][1]);
+					tmp_x = __2n_minima(x[i][0], x[i][1], &call);
 					if (tmp_gbest > tmp_x) {
 						for (int n = 0; n < N; n++) {
 							x_gbest[n] = x[i][n];
 						}
-						tmp_gbest = tmp_x;
+						tmp_gbest = __2n_minima(x_gbest[0], x_gbest[1], &call);
 					}
 
 					for (int n = 0; n < N; n++) {
@@ -105,23 +108,20 @@ int main()
 					x[i][n] = x[i][n] + v[i][n];
 				}
 			}
-		}
 
-		fout << m << "\t";
-		fout << x_gbest[0] << "\t";
-		fout << x_gbest[1] << endl;
-		if (tmp_gbest <= -150) {
-			count++;
+			if (call <= 200 && call % 5 == 0) {
+				fout << call << "\t" << tmp_gbest << endl;
+			}
 		}
 	}
-	fout << count << endl;
 
 	return 0;
 }
 
 // 目的関数
-double __2n_minima (double x1, double x2)
+double __2n_minima (double x1, double x2, int *call)
 {
+	(*call)++;
 	double f;
 	f = pow(x1, 4) - 16 * pow(x1, 2) + 5 * x1 + pow(x2, 4) - 16 * pow(x2, 2) + 5 * x2;
 	return f;
